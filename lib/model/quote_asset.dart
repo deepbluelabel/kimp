@@ -8,6 +8,11 @@ class QuoteAsset extends Model{
   double rateperusd;
 
   QuoteAsset({this.id, this.name, this.rateperusd = 0.0});
+
+  @override
+  toJson() {
+    return {'id':id, 'name':name, 'rateperusd':rateperusd};
+  }
 }
 
 class QuoteAssetRepository extends Repository{

@@ -7,8 +7,14 @@ class BinanceFuture extends TradingMarket{
   @override
   fetchCurrencies() async{
     final uri = Uri.parse('https://fapi.binance.com/fapi/v1/exchangeInfo');
-    final response = await http.get(uri);
-    print ('${name} fetch currencies ${response.statusCode.toString()}');
+    try {
+      final response = await http.get(uri);
+      print('${name} fetch currencies ${response.statusCode.toString()}');
+      return jsonDecode(response.body)['symbols'];
+    }catch (e){
+      print('${name} failed to fetch currencies ${e}');
+      throw e;
+    }
   }
 
   @override

@@ -8,6 +8,11 @@ class Market extends Model{
   final quoteassetid;
 
   Market({this.id, this.name, this.quoteassetid});
+
+  @override
+  toJson() {
+    return {'id':id, 'name':name, 'quoteassetid':quoteassetid};
+  }
 }
 
 class MarketRepository extends Repository{

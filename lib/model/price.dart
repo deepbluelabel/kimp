@@ -8,6 +8,11 @@ class Price extends Model{
   final price;
 
   Price({this.currencyid, this.marketid, this.price});
+
+  @override
+  toJson() {
+    return {'currencyid':currencyid, 'marketid':marketid, 'price':price};
+  }
 }
 
 class PriceRepository extends Repository{

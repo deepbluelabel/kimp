@@ -7,8 +7,14 @@ class Upbit extends TradingMarket{
   @override
   fetchCurrencies() async{
     final uri = Uri.parse('https://api.upbit.com/v1/market/all');
-    final response = await http.get(uri);
-    print ('${name} fetch currencies ${response.statusCode.toString()}');
+    try {
+      final response = await http.get(uri);
+      print('${name} fetch currencies ${response.statusCode.toString()}');
+      return jsonDecode(response.body);
+    }catch (e){
+      print('${name} failed to fetch currencies ${e}');
+      throw e;
+    }
   }
 
   @override
