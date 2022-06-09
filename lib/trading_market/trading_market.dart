@@ -1,18 +1,20 @@
+import 'package:kimp/model/market.dart';
+
 import 'binance_future.dart';
 import 'upbit.dart';
 
 abstract class TradingMarket{
-  TradingMarket(){
+  final Market market;
+  TradingMarket({required this.market}){
     print ('${runtimeType} is created');
   }
 
-  abstract String name;
   fetchCurrencies();
 
-  factory TradingMarket.create(String name){
-    switch (name){
-      case 'BinanceFuture': return BinanceFuture();
-      case 'Upbit': return Upbit();
+  factory TradingMarket.create(market){
+    switch (market.name){
+      case 'BinanceFuture': return BinanceFuture(market:market);
+      case 'Upbit': return Upbit(market:market);
     }
     throw Exception('no trading market');
   }

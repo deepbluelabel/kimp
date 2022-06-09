@@ -1,6 +1,9 @@
-[Currency|id;name;symbol]
-[Market|id;name;quoteassetid]
+[Currency|id;name;symbol;quoteAsset]
+[Market|id;name;quoteAsset]
 [QuoteAsset|id;name;rateperusd]
-[Price|currencyid;marketid;price]
+[Price|Currency;Market;price]
+[KimpPrice|Currency;rateperusd]
 
 [Currency]-*[Price]*-++[Market]*-[QuoteAsset]
+[Currency]++-1[KimpPrice]
+[Currency]*-[QuoteAsset]

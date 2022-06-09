@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kimp/controller/kimp_controller.dart';
 import 'package:kimp/model/currency.dart';
+import 'package:kimp/model/kimp_price.dart';
 import 'package:kimp/model/market.dart';
 import 'package:kimp/model/price.dart';
 import 'package:kimp/model/quote_asset.dart';
@@ -17,11 +18,13 @@ class MyApp extends StatelessWidget {
     final marketRepository = MarketRepository();
     final priceRepository = PriceRepository();
     final quoteAssetRepository = QuoteAssetRepository();
+    final kimpPriceRepository = KimpPriceRepository();
     final kimpController = KimpController(
         currencyRepository: currencyRepository,
         marketRepository: marketRepository,
         priceRepository: priceRepository,
-        quoteAssetRepository: quoteAssetRepository)..init();
+        quoteAssetRepository: quoteAssetRepository,
+        kimpPriceRepository: kimpPriceRepository)..init();
   }
 
   @override

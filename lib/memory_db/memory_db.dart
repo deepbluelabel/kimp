@@ -1,7 +1,8 @@
 import 'package:kimp/util/database.dart';
+import 'package:kimp/util/model.dart';
 
-class MemoryDB<T> extends Database{
-  final records = <T>[];
+class MemoryDB extends Database{
+  final records = <Model>[];
 
   @override
   read() {
@@ -10,6 +11,16 @@ class MemoryDB<T> extends Database{
 
   @override
   add(record) {
-    records.add(record);
+    if(_isExist(record) == false) {
+      if (record.id == Model.UNDEFINED_ID) record.id = _getNewId();
+      records.add(record);
+    }
   }
+
+  _getNewId(){
+    if (records.isEmpty) return 0;
+    return records.last.id+1;
+  }
+
+  _isExist(record) => records.any((e)=>e==record);
 }

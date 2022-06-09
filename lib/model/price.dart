@@ -2,23 +2,26 @@ import 'package:kimp/memory_db/memory_db.dart';
 import 'package:kimp/util/model.dart';
 import 'package:kimp/util/repository.dart';
 
-class Price extends Model{
-  final currencyid;
-  final marketid;
-  final price;
+import 'currency.dart';
+import 'market.dart';
 
-  Price({this.currencyid, this.marketid, this.price});
+class Price extends Model{
+  final Currency currency;
+  final Market market;
+  double price;
+
+  Price({required this.currency, required this.market, this.price = 0.0});
 
   @override
-  toJson() {
-    return {'currencyid':currencyid, 'marketid':marketid, 'price':price};
+  toJsonLocal() {
+    return {'currency':currency.toJson(), 'market':market.toJson(),
+      'price':price};
   }
+
+  @override
+  List<Object?> get props => [currency, market];
 }
 
 class PriceRepository extends Repository{
-  PriceRepository():super(db:MemoryDB<Price>);
-
-  @override
-  getAll() {
-  }
+  PriceRepository():super(db:MemoryDB());
 }

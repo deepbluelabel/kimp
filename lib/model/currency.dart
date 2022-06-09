@@ -2,25 +2,25 @@ import 'package:kimp/memory_db/memory_db.dart';
 import 'package:kimp/util/model.dart';
 import 'package:kimp/util/repository.dart';
 
-class Currency extends Model{
-  final id;
-  final String? name;
-  final symbol;
-  final quoteasset;
+import 'quote_asset.dart';
 
-  Currency({this.id, this.name, this.symbol, this.quoteasset});
+class Currency extends Model{
+  final String name;
+  final String symbol;
+  final QuoteAsset quoteAsset;
+
+  Currency({id, this.name = Model.UNDEFINED_VALUE,
+    required this.symbol, required this.quoteAsset});
 
   @override
-  toJson() {
-    return {'id':id, 'name':name ?? Model.UNDEFINED_VALUE, 'symbol':symbol,
-      'quoteAsset':quoteasset};
+  toJsonLocal() {
+    return {'name':name, 'symbol':symbol, 'quoteAsset':quoteAsset.toJson()};
   }
+
+  @override
+  List<Object?> get props => [symbol, quoteAsset];
 }
 
 class CurrencyRepository extends Repository{
-  CurrencyRepository():super(db:MemoryDB<Currency>);
-
-  @override
-  getAll() {
-  }
+  CurrencyRepository():super(db:MemoryDB());
 }
