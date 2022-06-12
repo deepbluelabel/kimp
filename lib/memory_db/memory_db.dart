@@ -10,11 +10,13 @@ class MemoryDB extends Database{
   }
 
   @override
-  add(record) {
+  bool add(record) {
     if(_isExist(record) == false) {
       if (record.id == Model.UNDEFINED_ID) record.id = _getNewId();
       records.add(record);
+      return true;
     }
+    return false;
   }
 
   _getNewId(){

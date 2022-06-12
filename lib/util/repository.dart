@@ -6,10 +6,7 @@ abstract class Repository{
 
   getAll() => db.read();
 
-  add(item){
-    db.add(item);
-    return item.id;
-  }
+  add(item) => db.add(item);
 
   get(Where where){
     return db.read().where((e)=>where(e));

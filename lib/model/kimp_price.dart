@@ -2,19 +2,21 @@ import 'package:kimp/memory_db/memory_db.dart';
 import 'package:kimp/util/model.dart';
 import 'package:kimp/util/repository.dart';
 
-import 'currency.dart';
+import 'price.dart';
 
 class KimpPrice extends Model{
-  final Currency currency;
+  final Price base;
+  final Price compare;
   double rateperusd;
 
-  KimpPrice({required this.currency, this.rateperusd = 0.0});
+  KimpPrice({required this.base, required this.compare, this.rateperusd = 0.0});
 
   @override
-  toJsonLocal() => {'currency':currency.toJson(), 'rateperusd':rateperusd};
+  toJsonLocal() => {'base':base.toJson(), 'compare':compare.toJson(),
+    'rateperusd':rateperusd};
 
   @override
-  List<Object?> get props => [currency];
+  List<Object?> get props => [base, compare];
 }
 
 class KimpPriceRepository extends Repository{
