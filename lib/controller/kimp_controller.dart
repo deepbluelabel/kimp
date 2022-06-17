@@ -7,11 +7,12 @@ import 'package:kimp/model/kimp_price.dart';
 import 'package:kimp/model/market.dart';
 import 'package:kimp/model/price.dart';
 import 'package:kimp/model/quote_asset.dart';
+import 'package:kimp/model/setting.dart';
 import 'package:kimp/trading_market/trading_market.dart';
 import 'package:kimp/util/repository_manager.dart';
 import 'package:kimp/util/scheduler.dart';
 
-enum KimpControllerState {NOTINIT, INITED}
+enum KimpControllerState {NOTINIT, ALL, PREFERRED}
 class KimpController extends GetxController{
   final RepositoryManager repositoryManager;
   late CurrencyRepository currencyRepository;
@@ -19,6 +20,7 @@ class KimpController extends GetxController{
   late PriceRepository priceRepository;
   late QuoteAssetRepository quoteAssetRepository;
   late KimpPriceRepository kimpPriceRepository;
+  late SettingRepository settingRepository;
   final state = KimpControllerState.NOTINIT.obs;
 
   final scheduler = Scheduler();
@@ -27,6 +29,8 @@ class KimpController extends GetxController{
   final kimpPrices = <KimpPrice>[].obs;
   QuoteAsset quoteAssetUSDT = QuoteAsset(name:'USDT', rateperusd: 1.0);
   QuoteAsset quoteAssetKRW = QuoteAsset(name:'KRW');
+  late Setting setting;
+  final krwPerUSD = (0.0).obs;
 
   init() async{
     currencyRepository = repositoryManager.get<Currency>();
@@ -34,27 +38,29 @@ class KimpController extends GetxController{
     quoteAssetRepository = repositoryManager.get<QuoteAsset>();
     priceRepository = repositoryManager.get<Price>();
     kimpPriceRepository = repositoryManager.get<KimpPrice>();
-    quoteAssetRepository.add(quoteAssetUSDT);
-    quoteAssetRepository.add(quoteAssetKRW);
+    settingRepository = repositoryManager.get<Setting>();
+    await quoteAssetRepository.add(quoteAssetUSDT);
+    await quoteAssetRepository.add(quoteAssetKRW);
     Market marketUpbit = Market(name:'Upbit', quoteAsset: quoteAssetKRW);
     Market marketBinanceFuture = Market(name:'BinanceFuture',
         quoteAsset: quoteAssetUSDT);
-    marketRepository.add(marketUpbit);
-    marketRepository.add(marketBinanceFuture);
+    await marketRepository.add(marketUpbit);
+    await marketRepository.add(marketBinanceFuture);
     marketRepository.getAll()
         .map((e)=>TradingMarket.create(e, repositoryManager)).toList()
         .forEach((e){
           tradingMarkets.add(e);
     });
     await _fetchCurrencies();
-    await kimpPriceRepository.getAll().forEach((e) => kimpPrices.add(e));
     scheduler.addSchedule('fetch prices', '*/3 * * * * *', (name) async{
       print ('${name} expired at ${DateTime.now().toString()}');
       await _fetchPrices();
-      quoteAssetKRW.rateperusd = await _getUSDKRW();
+      krwPerUSD.value = quoteAssetKRW.rateperusd = await _getUSDKRW();
       await kimpPriceRepository.getAll().forEach((e) => _calcKimp(e));
-      if (state == KimpControllerState.NOTINIT)
-        state.value = KimpControllerState.INITED;
+      if (state == KimpControllerState.NOTINIT) {
+        setState(KimpControllerState.ALL);
+        _loadSetting();
+      }
       kimpPrices.refresh();
     });
     scheduler.addSchedule('fetch currencies', '0 0 * * * *', (name) async{
@@ -65,11 +71,45 @@ class KimpController extends GetxController{
 
   KimpController({required this.repositoryManager});
 
+  setState(value) async{
+    if (state != value){
+      state.value = value;
+      kimpPrices.clear();
+      if (value == KimpControllerState.PREFERRED)
+        await kimpPriceRepository.getAll()
+          .where((e) => e.preferred == true)
+          .forEach((e) => kimpPrices.add(e));
+      else
+        await kimpPriceRepository.getAll().forEach((e) => kimpPrices.add(e));
+      kimpPrices.refresh();
+    }
+  }
+
+  togglePreferred(KimpPrice kimpPrice){
+    kimpPrice.preferred = !kimpPrice.preferred;
+    setting.preferred.clear();
+    setting.preferred.addAll(kimpPrices.where((e) => e.preferred)
+      .map((e)=>e.base.currency.symbol).toList());
+    settingRepository.update(setting);
+    kimpPrices.refresh();
+  }
+
+  _loadSetting() async{
+    if (settingRepository.isEmpty){
+      setting = Setting();
+      await settingRepository.add(setting);
+    }else
+      setting = settingRepository.getAll().first;
+    kimpPrices.forEach((e){
+      if (setting.preferred.contains(e.base.currency.symbol))
+        e.preferred = true;
+    });
+  }
+
   _calcKimp(e){
     final baseUSD = (e.base.price/quoteAssetKRW.rateperusd).toDouble();
     final compareUSD = (e.compare.price/quoteAssetUSDT.rateperusd).toDouble();
     e.rateperusd = (baseUSD-compareUSD)/compareUSD*100.0;
-    print(e.base.currency.symbol+' '+e.rateperusd.toString());
   }
 
   _getUSDKRW() async{
@@ -104,16 +144,16 @@ class KimpController extends GetxController{
         final json = await tradingMarket.fetchCurrencies();
         final adapter = tradingMarket.adapter;
         await json.map((e) => adapter.fromJson<Currency>(e))
-            .forEach((e) {
+            .forEach((e) async{
           var currency = e;
-          if (currencyRepository.add(e) == false)
+          if (await currencyRepository.add(e) == false)
             currency = currencyRepository
                 .get((currency)=>e==currency).first;
           final market = tradingMarket.market;
           if (market.quoteAsset == currency.quoteAsset){
             final price = Price(currency: currency,
                 market: tradingMarket.market);
-            priceRepository.add(price);
+            await priceRepository.add(price);
           }
         });
       }catch (e){
@@ -135,7 +175,7 @@ class KimpController extends GetxController{
         final compare = comparePrices
             .where((e) => e.currency.symbol == marketPrice.currency.symbol)
             .first;
-        kimpPriceRepository
+        await kimpPriceRepository
             .add(KimpPrice(base: marketPrice, compare: compare));
       }
     }

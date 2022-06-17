@@ -21,8 +21,17 @@ class MemoryDB extends Database{
 
   _getNewId(){
     if (records.isEmpty) return 0;
-    return records.last.id+1;
+    return records.last.id!+1;
   }
 
   _isExist(record) => records.any((e)=>e==record);
+
+  @override
+  connect(name, adapter) {}
+
+  @override
+  delete(record) {}
+
+  @override
+  update(record) {}
 }

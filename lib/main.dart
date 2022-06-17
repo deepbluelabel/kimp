@@ -6,9 +6,11 @@ import 'package:kimp/model/kimp_price.dart';
 import 'package:kimp/model/market.dart';
 import 'package:kimp/model/price.dart';
 import 'package:kimp/model/quote_asset.dart';
+import 'package:kimp/model/setting.dart';
 
 import 'util/repository_manager.dart';
 import 'widget/kimp_list_widget.dart';
+import 'widget/kimp_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,6 +26,7 @@ class MyApp extends StatelessWidget {
     repositoryManager.add<Price>(PriceRepository());
     repositoryManager.add<QuoteAsset>(QuoteAssetRepository());
     repositoryManager.add<KimpPrice>(KimpPriceRepository());
+    repositoryManager.add<Setting>(SettingRepository());
     final kimpController = KimpController(
       repositoryManager: repositoryManager)..init();
     Get.put(kimpController);
@@ -41,6 +44,6 @@ class MyApp extends StatelessWidget {
 class Home extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body:KimpListWidget());
+    return KimpWidget();
   }
 }

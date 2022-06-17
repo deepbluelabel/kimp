@@ -11,4 +11,8 @@ abstract class Repository{
   get(Where where){
     return db.read().where((e)=>where(e));
   }
+
+  get isEmpty => db.read().isEmpty;
+
+  update(item) => db.update(item);
 }
