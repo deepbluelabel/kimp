@@ -36,12 +36,12 @@ class KimpListItemWidget extends StatelessWidget{
           Expanded(flex:3, child: Column(children: [
             Text(kimpPrice.base.currency.name),
             Text(kimpPrice.base.currency.symbol,
-              style: TextStyle(color: Colors.blueGrey, fontSize: 10))
+              style: TextStyle(color: Colors.blueGrey, fontSize: 11))
           ])),
           Expanded(flex:3, child: Column(children: [
             Text(kimpPrice.base.price.toString()),
             Text(kimpPrice.compare.price.toString(),
-                style: TextStyle(color: Colors.blueGrey, fontSize: 10))])),
+                style: TextStyle(color: Colors.blueGrey, fontSize: 11))])),
           Expanded(flex:2,
               child: _displayRate(kimpPrice.rateperusd))
         ])));
